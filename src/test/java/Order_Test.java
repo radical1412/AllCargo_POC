@@ -1,5 +1,6 @@
 import CommonUtil.Common;
 import Order_POM.Order;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -7,10 +8,11 @@ import java.io.IOException;
 public class Order_Test extends Common {
 
     @Test
-    public void openPage() throws IOException, InterruptedException {
+    @Parameters({"email" , "password"})
+    public void openPage(String email, String password) throws IOException, InterruptedException {
         Order order =  new Order(driver);
-        order.enterUser("shreyas.patil@ecuworldwide.com");
-        order.enterPass("Shreyas@21test");
+        order.enterUser(email);
+        order.enterPass(password);
         order.login();
         order.selectInstant();
         order.verifyMandatory();

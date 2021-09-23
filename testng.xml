@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="All Test Suite">
-    <test verbose="2" preserve-order="true" name="C:/Users/Rahul Dash/ECU_POC/src/test/java/Order_Test.java">
+    <test verbose="2" preserve-order="true" name="Instant Quote">
+        <parameter name="email" value="shreyas.patil@ecuworldwide.com"/>
+        <parameter name="password" value="Shreyas@21test"/>
         <classes>
             <class name="Order_Test"/>
         </classes>
