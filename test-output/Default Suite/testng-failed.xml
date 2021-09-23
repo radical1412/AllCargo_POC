@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
+  <test thread-count="5" name="ECU_POC(failed)">
+    <classes>
+      <class name="Order_Test">
+        <methods>
+          <include name="endReports"/>
+          <include name="close"/>
+          <include name="openPage"/>
+          <include name="setup"/>
+          <include name="launchChrome"/>
+        </methods>
+      </class> <!-- Order_Test -->
+    </classes>
+  </test> <!-- ECU_POC(failed) -->
+</suite> <!-- Failed suite [Default Suite] -->
