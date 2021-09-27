@@ -20,7 +20,8 @@ public class Order {
 
     public Order(WebDriver driver) {
         this.driver = driver;
-        wait = new WebDriverWait(driver, 20, 150);
+        //Even with 100 seconds as loader time the loaders are not going away
+        wait = new WebDriverWait(driver, 150, 150);
         prop = new Common();
     }
 
@@ -85,6 +86,7 @@ public class Order {
             "ready date and are to be considered as an indication.']");
     By quoteTip = By.xpath("//span[text() = ' The selected Quote is no longer valid and will not be attached " +
             "to your booking. Rates might no longer be valid']");
+    By saveTip = By.xpath("//span[text() = 'Quotation Saved Successfully']");
 
     public void enterUser(String email) {
         driver.findElement(userTB).sendKeys(email);
@@ -101,12 +103,13 @@ public class Order {
     }
 
     public void logout() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(quoteTip));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(quoteTip));
         driver.findElement(logoutBtn).click();
     }
 
     public void selectInstant() {
-        waitClickable(driver.findElement(instantQuoteBtn)).click();
+        waitClickable(instantQuoteBtn).click();
         waitLoader();
     }
 
@@ -117,7 +120,7 @@ public class Order {
         driver.findElement(toTB).click();
         driver.findElement(weightTB).click();
         driver.findElement(volumeTB).sendKeys(Keys.RETURN);
-        waitClickable(driver.findElement(erVolumeTB));
+        waitClickable(erVolumeTB);
         Assert.assertEquals(driver.findElement(erFromTB).getText(), prop.readProp().getProperty("erFrom"),
                 "Error message is not valid for Source TB");
         Assert.assertEquals(driver.findElement(erToTB).getText(), prop.readProp().getProperty("erTo"),
@@ -132,12 +135,13 @@ public class Order {
         driver.findElement(dimensionDD).click();
         driver.findElement(dOptionYes).click();
         Thread.sleep(500);
-        waitClickable(driver.findElement(dLengthTB)).click();
+        //Sometimes these fields don't appear at all
+        waitClickable(dLengthTB).click();
         driver.findElement(dWidthTB).click();
         driver.findElement(dHeightTB).click();
         driver.findElement(dPiecesTB).click();
         driver.findElement(dWeightTB).sendKeys(Keys.RETURN, Keys.TAB);
-        waitClickable(driver.findElement(erdWeightTB));
+        waitClickable(erdWeightTB);
         Assert.assertEquals(driver.findElement(erdLengthTB).getText(), prop.readProp().getProperty("erdLength"),
                 "Error message is not valid for Source TB");
         Assert.assertEquals(driver.findElement(erdWidthTB).getText(), prop.readProp().getProperty("erdWidth"),
@@ -152,38 +156,41 @@ public class Order {
     }
 
     public void setSource(String source) {
-        waitClickable(driver.findElement(fromTB)).sendKeys(source);
+        int counter = 0;
+        waitClickable(fromTB).sendKeys(source);
         waitLoader();
         /*The POC document specifically asked for the below values to be selected.
          * In practice, I would have selected whatever the first option and verified if that is the correct auto-suggestion.
          */
-        try {
-            driver.findElement(sourceDD).click();
-        } catch (Exception e) {
-            System.out.println(e);
-            driver.findElement(fromTB).sendKeys(" ");
-            waitLoader();
-            driver.findElement(sourceDD).click();
+        while (!waitPresent(sourceDD))
+        {
+            waitClickable(fromTB).click();
+            counter++;
+            if (counter>2){
+                Assert.fail("Auto Suggestion is not loading up properly.");
+                break;
+            }
         }
-        waitLoader();
         driver.findElement(clickRandom).click();
         waitLoader();
     }
 
     public void setDestination(String destination) {
-        waitClickable(driver.findElement(toTB)).sendKeys(destination);
+        int counter = 0;
+        waitClickable(toTB).sendKeys(destination);
         waitLoader();
         /*The POC document specifically asked for the below values to be selected.
          * In practice, I would have selected whatever the first option and verified if that is the correct auto-suggestion.
          */
-        try {
-            driver.findElement(destinationDD).click();
-        } catch (Exception e) {
-            driver.findElement(toTB).sendKeys(" ");
-            waitLoader();
-            driver.findElement(destinationDD).click();
+        while (!waitPresent(destinationDD))
+        {
+            waitClickable(toTB).click();
+            counter++;
+            if (counter>2){
+                Assert.fail("Auto Suggestion is not loading up properly.");
+                break;
+            }
         }
-        waitLoader();
         driver.findElement(clickRandom).click();
         waitLoader();
     }
@@ -196,6 +203,7 @@ public class Order {
     public void setDimensions(double length, double width, double height, double pieces, double weight) {
         driver.findElement(dimensionDD).click();
         driver.findElement(dOptionYes).click();
+        //Sometimes these fields don't appear at all
         driver.findElement(dLengthTB).sendKeys(length + "");
         driver.findElement(dWidthTB).sendKeys(width + "");
         driver.findElement(dHeightTB).sendKeys(height + "");
@@ -204,8 +212,10 @@ public class Order {
     }
 
     public void getQuote() {
-        driver.findElement(getQuoteBtn).click();
+        waitClickable(getQuoteBtn).click();
         waitLoader();
+        //Application is not going ahead with single click oin Get Quote
+        waitClickable(getQuoteBtn).click();
         waitLoader();
         amount = driver.findElement(amountList).getText();
     }
@@ -213,6 +223,7 @@ public class Order {
     public void saveQuote() {
         driver.findElement(saveEmailBtn).click();
         waitLoader();
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(saveTip));
     }
 
     public void viewDetails() {
@@ -222,7 +233,7 @@ public class Order {
     }
 
     public void verifyDetailsPage() {
-        waitClickable(driver.findElement(rateTip));
+        waitClickable(rateTip);
         Assert.assertTrue(driver.findElement(originCheck).isDisplayed());
         Assert.assertTrue(driver.findElement(freightCheck).isDisplayed());
         Assert.assertTrue(driver.findElement(additionalCheck).isDisplayed());
@@ -235,16 +246,22 @@ public class Order {
     }
 
     public void waitLoader() {
-        try{
-        wait.until(ExpectedConditions.visibilityOfElementLocated(loader));
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(loader));}
-        catch (Exception e){
-            System.out.println("Loader unknown.");
-        }
+            wait.until(ExpectedConditions.visibilityOfElementLocated(loader));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(loader));
     }
 
-    public WebElement waitClickable(WebElement element) {
+    public WebElement waitClickable(By element) {
         wait.until(ExpectedConditions.elementToBeClickable(element));
-        return element;
+        return driver.findElement(element);
+    }
+
+    public Boolean waitPresent(By element) {
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(element));
+            return true;
+        } catch (Exception e) {
+            System.out.println(e);
+            return false;
+        }
     }
 }
