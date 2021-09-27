@@ -212,10 +212,11 @@ public class Order {
     }
 
     public void getQuote() {
-        waitClickable(getQuoteBtn).click();
-        waitLoader();
+        /*waitClickable(getQuoteBtn).click();
+        waitLoader();*/
         //Application is not going ahead with single click oin Get Quote
         waitClickable(getQuoteBtn).click();
+        waitLoader();
         waitLoader();
         amount = driver.findElement(amountList).getText();
     }
