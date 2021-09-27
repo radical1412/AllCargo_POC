@@ -155,7 +155,7 @@ public class Order {
         waitClickable(driver.findElement(fromTB)).sendKeys(source);
         waitLoader();
         /*The POC document specifically asked for the below values to be selected.
-         * I practice I would have selected whatever the first option and verified if that is the correct auto-suggestion.
+         * In practice, I would have selected whatever the first option and verified if that is the correct auto-suggestion.
          */
         try {
             driver.findElement(sourceDD).click();
@@ -174,7 +174,7 @@ public class Order {
         waitClickable(driver.findElement(toTB)).sendKeys(destination);
         waitLoader();
         /*The POC document specifically asked for the below values to be selected.
-         * I practice I would have selected whatever the first option and verified if that is the correct auto-suggestion.
+         * In practice, I would have selected whatever the first option and verified if that is the correct auto-suggestion.
          */
         try {
             driver.findElement(destinationDD).click();
