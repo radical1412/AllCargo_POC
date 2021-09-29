@@ -1,5 +1,6 @@
 package CommonUtil;
 
+import com.google.common.base.Throwables;
 import com.relevantcodes.extentreports.ExtentReports;
 import com.relevantcodes.extentreports.ExtentTest;
 import com.relevantcodes.extentreports.LogStatus;
@@ -19,6 +20,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -33,6 +36,7 @@ public class Common {
     public void setup() {
         WebDriverManager.chromedriver().setup();
         report = new ExtentReports("Reports\\ExtentReportResults.html");
+        report.loadConfig(new File("Reports\\config.xml"));
         test = report.startTest("OrderTest");
     }
 
@@ -46,10 +50,7 @@ public class Common {
     @AfterMethod
     public void close(ITestResult result) throws IOException {
         if (!result.isSuccess()) {
-            File scrShot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            String now = DateTimeFormatter.ofPattern("dd-MM-yy HH.mm.ss").format(LocalDateTime.now());
-            FileUtils.copyFile(scrShot, new File("FailedScr/" + now + ".png"));
-            test.log(LogStatus.FAIL, test.addScreencast("FailedScr/" + now + ".png"), "The Test has failed.");
+            testFail(result);
         } else {
             test.log(LogStatus.PASS, "The test was executed successfully.");
             driver.quit();
@@ -67,5 +68,14 @@ public class Common {
         BufferedReader br = new BufferedReader(new FileReader("src/main/resources/config.txt"));
         prop.load(br);
         return prop;
+    }
+
+    public void testFail(ITestResult result) throws IOException {
+        File scrShot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        String now = DateTimeFormatter.ofPattern("dd-MM-yy HH.mm.ss").format(LocalDateTime.now());
+        FileUtils.copyFile(scrShot, new File("FailedScr/" + now + ".png"));
+        String path = Paths.get("FailedScr/" + now + ".png").toAbsolutePath().toString();
+        test.log(LogStatus.FAIL, test.addScreenCapture(path), "The Test \""+result.getName()+ "\" has failed.");
+        test.log(LogStatus.INFO,"", Throwables.getStackTraceAsString(result.getThrowable()));
     }
 }

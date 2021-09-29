@@ -8,6 +8,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import org.testng.asserts.SoftAssert;
 
 import java.io.IOException;
 
@@ -17,12 +18,14 @@ public class Order {
     WebDriverWait wait;
     Common prop;
     String amount;
+    SoftAssert softAssert;
 
     public Order(WebDriver driver) {
         this.driver = driver;
         //Even with 100 seconds as loader time the loaders are not going away
-        wait = new WebDriverWait(driver, 150, 150);
+        wait = new WebDriverWait(driver, 20, 150);
         prop = new Common();
+        softAssert = new SoftAssert();
     }
 
     By loader = By.xpath("//mat-spinner[@class]");
@@ -212,11 +215,25 @@ public class Order {
     }
 
     public void getQuote() {
-        /*waitClickable(getQuoteBtn).click();
-        waitLoader();*/
-        //Application is not going ahead with single click oin Get Quote
         waitClickable(getQuoteBtn).click();
         waitLoader();
+        //Application is not going ahead with single click on Get Quote.
+        waitClickable(getQuoteBtn).click();
+        waitLoader();
+        amount = driver.findElement(amountList).getText();
+    }
+
+    public void getQuote(String value) {
+        waitClickable(getQuoteBtn).click();
+        waitLoader();
+        //Application goes to next page and again a loader is shown.
+        waitLoader();
+        amount = driver.findElement(amountList).getText();
+    }
+
+    public void getQuote(int value) {
+        waitClickable(getQuoteBtn).click();
+        //Hoping that the Application goes to next page after get quote after a single click and single loader.
         waitLoader();
         amount = driver.findElement(amountList).getText();
     }
@@ -261,7 +278,7 @@ public class Order {
             wait.until(ExpectedConditions.presenceOfElementLocated(element));
             return true;
         } catch (Exception e) {
-            System.out.println(e);
+            softAssert.fail("The Element is not Present!");
             return false;
         }
     }
